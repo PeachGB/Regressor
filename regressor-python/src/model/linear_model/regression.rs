@@ -37,6 +37,10 @@ impl LinearRegression {
 
         }
     }
+    fn betas(&self) -> Option<Array1<f64>>{
+        self.betas.clone()
+    }
+
 }
 impl Model for LinearRegression {
     fn fit(&mut self, x: PyDataFrame, y: PySeries) -> PyResult<()> {
@@ -91,6 +95,17 @@ impl LinearRegression {
             solver: None,
         }
     }
+    fn params(&self) -> PyResult<(f64, Vec<f64>)> {
+
+        let Some(betas) = self.betas() else {return err_model_not_fitted()};
+
+        let mut betas = betas.to_vec();
+
+        let intercept = betas.remove(0);
+
+        Ok((intercept,betas))
+    }
+
     fn fit(&mut self,x: PyDataFrame, target: PySeries) -> PyResult<()> {
         Model::fit(self, x, target)
     }
@@ -116,8 +131,6 @@ fn simple_lin_reg_fit(reg: &mut LinearRegression, x: &DataFrame, y: &Series)  ->
     if x.height() != y.len(){
         return Err(PyErr::new::<PyException, &str>("Size of Features and Target dont match"));
     }
-    let beta_zero = 0.0;
-    let beta_one = 0.0;
 
     let x :Vec<f64>= simple_lin_reg_df_to_vec(x);
     let y:Vec<f64> = y.f64().unwrap().into_iter().map(|n| n.unwrap()).collect();
@@ -175,7 +188,7 @@ fn select_fit_for_solver(reg: &LinearRegression) -> fn(&mut LinearRegression,&Da
     }
 }
 
-fn err_model_not_fitted() -> PyResult<Vec<f64>>{
+fn err_model_not_fitted<T>() -> PyResult<T>{
     Err(PyErr::new::<PyException, &str>("Model not fitted yet"))
 }
 fn simple_lin_reg_predict(reg:&LinearRegression, x: &DataFrame) -> PyResult<Vec<f64>>{
@@ -210,3 +223,10 @@ fn select_predict_for_solver(reg: &LinearRegression) -> fn(&LinearRegression,&Da
     }
 }
 
+#[cfg(test)]
+mod tests{
+
+    use super::*;
+
+
+}
