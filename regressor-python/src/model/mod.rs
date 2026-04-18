@@ -1,12 +1,15 @@
 use pyo3::prelude::*;
-use pyo3_polars::{PyDataFrame, PySeries};
+use crate::utils::error::RegressorResult;
+
 pub mod linear_model;
 
 
 
 pub trait Model {
-    fn fit(&mut self, x: PyDataFrame, target: PySeries ) -> PyResult<()>;
-    fn predict(&self, x: PyDataFrame)-> PyResult<Vec<f64>>;
-    fn score(&self, x:PyDataFrame, y: PySeries)-> PyResult<f64>;
+    type Input;
+    type Target;
+    type Output;
+    fn fit(&mut self, x: Self::Input, target: Self::Target ) -> RegressorResult<()>;
+    fn predict(&self, x: Self::Input)-> RegressorResult<Self::Output>;
 
 }
