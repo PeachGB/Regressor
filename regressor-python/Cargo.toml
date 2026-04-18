@@ -13,5 +13,5 @@ polars = {version =  "0.53.0", features = ["ndarray"]}
 pyo3 = { version = "0.27.2", features = ["extension-module"]}
 pyo3-polars = "0.26.0"
 ndarray = "0.17.2"
-ndarray-linalg = "0.18.1"
+ndarray-linalg = { version = "0.18.1", features = ["intel-mkl-static"] }
 

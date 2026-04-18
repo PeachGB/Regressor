@@ -28,7 +28,8 @@ impl Model for LinearRegression {
 
 
     fn fit(&mut self, x: Self::Input, y: Self::Target) -> RegressorResult<()> {
-        self.betas = Some(regression::linear_regression_betas(x, y));
+        let betas = regression::linear_regression_betas(x, y)?;
+        self.betas = Some(betas);
         Ok(())
         }
 
