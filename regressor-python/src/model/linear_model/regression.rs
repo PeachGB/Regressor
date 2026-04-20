@@ -2,12 +2,12 @@ use ndarray::{Array1, Array2, Axis};
 use ndarray_linalg::Solve;
 use crate::utils::error::{RegressorError, RegressorResult};
 
-pub fn linear_regression_betas(x: Array2<f64>, y: Array1<f64>) -> RegressorResult<Array1<f64>> {
+pub fn linear_regression_betas(x: &Array2<f64>, y: &Array1<f64>) -> RegressorResult<Array1<f64>> {
     if x.nrows() != y.len() {
         return Err(RegressorError::SizeMismatch);
     }
 
-    if x.ncols() == 1 {
+    if x.ncols() <= 2 {
         let x = x.index_axis(Axis(1), 0).to_owned();
 
         let Some(x_hat) = x.mean() else {
@@ -37,13 +37,19 @@ pub fn linear_regression_betas(x: Array2<f64>, y: Array1<f64>) -> RegressorResul
         Ok(Array1::from_vec(vec![beta0, beta1]))
     } else {
         let xt = x.t();
-        let a = xt.dot(&x);
-        let b = xt.dot(&y);
+        let a = xt.dot(x);
+        let b = xt.dot(y);
         let betas = a.solve_into(b)?;
         Ok(betas)
     }
 }
 
+
 pub fn linear_regression(x: &Array2<f64>, betas: &Array1<f64>) -> Array1<f64> {
     x.dot(betas)
+}
+
+pub fn logistic_regression(x: &Array2<f64>, betas: &Array1<f64>) -> Array1<f64> {
+    let z = x.dot(betas);
+    z.mapv(|z| 1.0 / (1.0 + (-z).exp()))
 }
