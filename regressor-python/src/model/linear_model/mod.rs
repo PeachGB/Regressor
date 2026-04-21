@@ -14,7 +14,7 @@ use crate::utils::error::RegressorError;
 use crate::utils::metrics::{mean_squared_error, r_squared, root_mean_squared_error};
 
  type LinearOutput = Vec<f64>;
-fn linear_model_fit(x: PyDataFrame, y:PySeries) -> RegressorResult<(Array2<f64>,Array1<f64>)>{
+fn linear_model_pydf_to_array(x: PyDataFrame, y:PySeries) -> RegressorResult<(Array2<f64>, Array1<f64>)>{
 
         let x:DataFrame = x.into();
         let y:Series = y.into();
@@ -31,6 +31,12 @@ pub enum Metric {
     R2,
     MSE,
     RMSE
+}
+#[pyclass]
+#[derive(Serialize,Deserialize,Clone,Debug,PartialEq)]
+pub enum Penalty{
+    L1(f64),
+    L2(f64),
 }
 #[pyclass]
 #[derive(Serialize, Deserialize, Debug, Clone)]
@@ -119,7 +125,7 @@ impl LinearRegression {
     }
 
     fn fit(&mut self, x: PyDataFrame, y: PySeries) -> PyResult<()> {
-        let (x,y) = linear_model_fit(x,y)?.into();
+        let (x,y) = linear_model_pydf_to_array(x, y)?.into();
 
         Model::fit(self, &x, &y).map_err(Into::into)
         
@@ -160,6 +166,7 @@ impl LinearRegression {
 #[derive(Serialize, Deserialize, Debug, Clone)]
 pub struct LogisticRegression {
     betas: Option <Array1<f64>>,
+    penalty: Option<Penalty>,
     learning_rate: f64,
     epochs: usize,
 }
@@ -171,6 +178,10 @@ impl LogisticRegression {
         }
         None
     }
+    fn set_penalty(&mut self, penalty: Penalty){
+        self.penalty = Some(penalty);
+    }
+
 }
 impl Model for LogisticRegression {
     type Input = Array2<f64>;
@@ -208,7 +219,21 @@ impl Differentiable for LogisticRegression {
 
         let n = target.len() as f64;
 
-        let gradient = x.t().dot(&error) / n;
+        let mut gradient = x.t().dot(&error) / n;
+
+        let Some(penalty) = &self.penalty else {return Ok(gradient)};
+        match penalty {
+            Penalty::L1(lambda) => {
+                let mut l1 = betas.mapv(|x| x.signum() * lambda/n);
+                l1[0] = 0.0;
+                gradient = gradient + l1;
+            }
+            Penalty::L2(lambda) => {
+                let mut l2 = betas.mapv(|x| x*lambda/n);
+                l2[0] = 0.0;
+                gradient = gradient +  l2;
+            }
+        }
 
         Ok(gradient)
     }
@@ -222,6 +247,7 @@ impl LogisticRegression{
     fn new(learning_rate: f64, epochs: usize) -> LogisticRegression {
         LogisticRegression {
             betas: None,
+            penalty: None,
             learning_rate,
             epochs,
         }
@@ -234,7 +260,7 @@ impl LogisticRegression{
         Ok((intercept,betas))
         }
     fn fit(&mut self, x: PyDataFrame, y: PySeries) -> PyResult<()> {
-        let (x,y) = linear_model_fit(x,y)?.into();
+        let (x,y) = linear_model_pydf_to_array(x, y)?.into();
 
         Model::fit(self, &x, &y).map_err(Into::into)
     }

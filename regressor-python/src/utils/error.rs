@@ -1,3 +1,4 @@
+use ndarray::ShapeError;
 use ndarray_linalg::error::LinalgError;
 use polars::error::{ErrString, PolarsError};
 use pyo3::{PyErr, PyResult};
