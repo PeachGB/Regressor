@@ -1,0 +1,18 @@
+# Rust build artifacts
+/target
+**/target/
+
+# Python
+.venv/
+.venv*/
+__pycache__/
+*.so
+*.pyd
+*.egg-info/
+
+# Editors / IDEs
+.idea/
+.vscode/
+
+# OS
+.DS_Store

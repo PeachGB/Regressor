@@ -1,5 +1,5 @@
 [package]
-name = "regressor"
+name = "regressor-python"
 version = "0.1.0"
 edition = "2024"
 
@@ -9,12 +9,12 @@ name = "regressor"
 crate-type = ["cdylib"]
 
 [dependencies]
-polars = {version =  "0.53.0", features = ["ndarray"]}
+polars = {workspace=true}
 pyo3 = { version = "0.27.2", features = ["extension-module"]}
 pyo3-polars = "0.26.0"
 numpy = "0.27"
-ndarray = { version = "0.17.2",features = ["serde"] }
-ndarray-linalg = { version = "0.18.1", features = ["intel-mkl-static"] }
-serde = { version = "1.0.228", features = ["derive"] }
-serde_json = "1.0.149"
-
+ndarray = {workspace=true}
+ndarray-linalg = {workspace=true}
+serde = {workspace=true}
+serde_json = {workspace=true}
+regressor-rs = { path="../regressor-rs" }

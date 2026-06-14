@@ -1,0 +1,10 @@
+[workspace]
+resolver = "3"
+members = ["regressor-python", "regressor-rs"]
+
+[workspace.dependencies]
+polars = {version =  "0.53.0", features = ["ndarray"]}
+ndarray = { version = "0.17.2",features = ["serde"] }
+ndarray-linalg = { version = "0.18.1", features = ["intel-mkl-static"] }
+serde = { version = "1.0.228", features = ["derive"] }
+serde_json = "1.0.149"

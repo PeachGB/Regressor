@@ -7,17 +7,16 @@ pub fn gradient_descent<T>(
     y: &T::Target,
     mut betas: T::Betas,
     learning_rate: f64,
-    epochs:usize
-
+    epochs: usize,
 ) -> RegressorResult<T::Betas>
 where
-    T: Differentiable, T::Betas: std::ops::Sub<Output = T::Betas> + Clone,
-    f64: std::ops::Mul<T::Betas, Output = T::Betas>
+    T: Differentiable,
+    T::Betas: std::ops::Sub<Output = T::Betas> + Clone,
+    T::Betas: std::ops::Mul<f64, Output = T::Betas>,
 {
-    for _ in 0..epochs{
+    for _ in 0..epochs {
         let gradient = model.compute_gradient(&x, &y, &betas)?;
-        betas = betas - (learning_rate * gradient);
+        betas = betas - (gradient * learning_rate);
     }
     Ok(betas)
-
 }
